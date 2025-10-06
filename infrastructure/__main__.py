@@ -6,9 +6,9 @@ from shared.appflow import flow
 
 
 # Import each lambda module
-from appsync_consumer.lambda import lambda_function as appsync_consumer_lambda
-from request_consumer.lambda import lambda_function as request_consumer_lambda
-from zendesk_cleaner.lambda import lambda_function as zendesk_cleaner_lambda
+from appsync_consumer.lambda_function import lambda_function as appsync_consumer_lambda
+from request_consumer.lambda_function import lambda_function as request_consumer_lambda
+from zendesk_cleaner.lambda_function import lambda_function as zendesk_cleaner_lambda
 
 project_name = pulumi.get_project()
 stack_name = pulumi.get_stack()

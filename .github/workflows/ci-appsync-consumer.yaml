@@ -69,7 +69,7 @@ jobs:
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
-          PULUMI_BACKEND_URL: s3://0202-pulumi-state/neurion-ai/appsync_consumer
+          PULUMI_BACKEND_URL: s3://0202-pulumi-state/neurion-ai/appsync-consumer
 
   deploy-staging:
     needs: build-staging
@@ -89,6 +89,7 @@ jobs:
       - name: Run Pulumi Deploy
         working-directory: ./infrastructure
         run: |
+          pip install -r requirements.txt
           pulumi login ${{ secrets.PULUMI_BACKEND_URL }}
           pulumi stack select staging --create
           pulumi preview --non-interactive
@@ -96,7 +97,7 @@ jobs:
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
-          PULUMI_BACKEND_URL: s3://0202-pulumi-state/neurion-ai/appsync_consumer
+          PULUMI_BACKEND_URL: s3://0202-pulumi-state/neurion-ai/appsync-consumer
 
   # build-production:
   #   if: github.ref == 'refs/heads/main'
