@@ -27,7 +27,7 @@ aws.iam.RolePolicyAttachment(
 lambda_function = aws.lambda_.Function(
     "zendeskCleanerLambda",
     runtime="python3.13",
-    code=pulumi.FileAsset("../../zendesk-consumer.zip"),
+    code=pulumi.FileAsset("../../zendesk-cleaner.zip"),
     handler="main.handler",
     role=lambda_role.arn,
     timeout=300,
