@@ -1,4 +1,5 @@
 # Import shared resources
+import pulumi
 from shared.vpc import vpc
 from shared.s3 import bucket
 from shared.appflow import flow
