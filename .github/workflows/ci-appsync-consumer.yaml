@@ -5,6 +5,7 @@ on:
     # paths:
     #   - 'functions/appsync-consumer/**'
   pull_request:
+  worfkflow_dispatch:
     # paths:
     #   - 'functions/appsync-consumer/**'
 

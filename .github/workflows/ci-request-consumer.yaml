@@ -5,6 +5,7 @@ on:
     # paths:
     #   - 'functions/request-consumer/**'
   pull_request:
+  worfkflow_dispatch:
     # paths:
     #   - 'functions/request-consumer/**'
 
