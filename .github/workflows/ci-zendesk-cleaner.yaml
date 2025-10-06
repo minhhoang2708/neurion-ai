@@ -86,7 +86,7 @@ jobs:
       - name: Setup Pulumi
         uses: pulumi/actions@v5
       - name: Run Pulumi Deploy
-        working-directory: ./knowledge_base_agent/infrastructure
+        working-directory: ./infrastructure
         run: |
           pulumi login ${{ secrets.PULUMI_BACKEND_URL }}
           pulumi stack select staging --create
