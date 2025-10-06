@@ -1,0 +1,80 @@
+name: Build Lambda
+description: Build and package a Lambda function with shared code
+inputs:
+  service-name:
+    required: true
+    type: string
+  service-path:
+    required: true
+    type: string
+  environment-name:
+    required: true
+    type: string
+  upload-artifact-name:
+    required: true
+    type: string
+  upload-artifact-path:
+    required: true
+    type: string
+  pulumi-working-directory:
+    required: true
+    type: string
+  pulumi-stack:
+    required: true
+    type: string
+  pulumi-config-passphrase:
+    required: true
+    type: string
+  pulumi-backend_url:
+    required: true
+    type: string
+  aws-access-key-id:
+    required: true
+    type: string
+  aws-secret-access-key:
+    required: true
+    type: string
+  aws-region:
+    required: true
+    type: string
+  aws-session-token:
+    required: false
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        rm -rf build && mkdir -p build/shared_lib
+        cp -r ${{ inputs.service-path }}/* build/
+        cp -r functions/shared_lib/* build/shared_lib
+        pip install -r build/requirements.txt --target build/
+        cd build
+        zip -r ../${{ inputs.upload-artifact-path }} .
+        cd ..
+        rm -rf build
+      shell: bash
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.upload-artifact-name }}
+        path: ${{ inputs.upload-artifact-path }}
+    - uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-session-token: ${{ inputs.aws-session-token }}
+        aws-region: ${{ inputs.aws-region }}
+    - name: Setup Pulumi
+      uses: pulumi/actions@v5
+    - name: Run Pulumi Preview
+      working-directory: ${{ inputs.pulumi-working-directory }}
+      shell: bash
+      run: |
+        pip install -r requirements.txt
+        pulumi login ${{ inputs.pulumi-backend_url }}
+        pulumi stack select ${{ inputs.pulumi-stack }} --create
+        pulumi preview --non-interactive
+      env:
+        AWS_REGION: ${{ inputs.aws-region }}
+        PULUMI_CONFIG_PASSPHRASE: ${{ inputs.pulumi-config-passphrase }}
+        PULUMI_BACKEND_URL: ${{ inputs.pulumi-backend_url }}

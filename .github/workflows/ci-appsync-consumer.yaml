@@ -2,143 +2,116 @@ name: CI AppSync Consumer
 
 on:
   push:
-    # paths:
-    #   - 'functions/appsync-consumer/**'
+    paths:
+      - 'functions/appsync_consumer/**'
   pull_request:
   workflow_dispatch:
-    # paths:
-    #   - 'functions/appsync-consumer/**'
+    paths:
+      - 'functions/appsync_consumer/**'
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      # - uses: actions/checkout@v3
-      # - name: Set up Python
-      #   uses: actions/setup-python@v4
-      #   with:
-      #     python-version: '3.13'
-      # - name: Install dependencies
-      #   run: pip install -r functions/appsync-consumer/requirements.txt
-      - name: Lint
-        run: |
-          # pip install flake8
-          # flake8 functions/appsync-consumer/main.py
-          echo "Linting step is currently disabled."
+      - uses: actions/checkout@v4
+      - name: Run Lint code
+        uses: ./.github/actions/lint
+        with:
+          service-path: functions/appsync_consumer
 
   test:
     runs-on: ubuntu-latest
     steps:
-      # - uses: actions/checkout@v3
-      # - name: Set up Python
-      #   uses: actions/setup-python@v4
-      #   with:
-      #     python-version: '3.13'
-      # - name: Install dependencies
-      #   run: pip install -r functions/appsync-consumer/requirements.txt
-      - name: Run tests
-        # run: pytest functions/appsync-consumer/
-        run: echo "Testing step is currently disabled."
+      - uses: actions/checkout@v4
+      - name: Run Unit Test
+        uses: ./.github/actions/test
+        with:
+          service-path: functions/appsync_consumer
 
   build-staging:
     needs: [lint, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Create Lambda ZIP
-        run: |
-          pip install -r ./functions/appsync-consumer/requirements.txt
-          zip -r appsync_consumer.zip ./functions/appsync-consumer
-      - uses: actions/upload-artifact@v4
-        with: { name: appsync-consumer-zip-staging, path: appsync_consumer.zip }
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: ./.github/actions/build-lambda
         with:
+          environment-name: staging
+          service-name: appsync-consumer
+          service-path: functions/appsync_consumer
+          upload-artifact-name: appsync-consumer-zip-staging
+          upload-artifact-path: appsync_consumer.zip
+          pulumi-working-directory: infrastructure/appsync_consumer
+          pulumi-stack: staging
+          pulumi-config-passphrase: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+          pulumi-backend_url: s3://0202-pulumi-state/neurion-ai/appsync-consumer
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ secrets.AWS_REGION }}
-      - name: Setup Pulumi
-        uses: pulumi/actions@v5
-      - name: Run Pulumi Preview
-        working-directory: ./infrastructure
-        run: |
-          pip install -r requirements.txt
-          pulumi login ${{ secrets.PULUMI_BACKEND_URL }}
-          pulumi stack select staging --create
-          pulumi preview --non-interactive
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
-          PULUMI_BACKEND_URL: s3://0202-pulumi-state/neurion-ai/appsync-consumer
 
   deploy-staging:
     needs: build-staging
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with: { name: appsync-consumer-zip-staging }
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Deploy AppSync Consumer
+        uses: ./.github/actions/deploy-lambda
         with:
+          environment-name: staging
+          service-name: appsync-consumer
+          service-path: functions/appsync_consumer
+          download-artifact-name: appsync-consumer-zip-staging
+          pulumi-working-directory: infrastructure/appsync_consumer
+          pulumi-stack: staging
+          pulumi-config-passphrase: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+          pulumi-backend_url: s3://0202-pulumi-state/neurion-ai/appsync-consumer
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ secrets.AWS_REGION }}
-      - name: Setup Pulumi
-        uses: pulumi/actions@v5
-      - name: Run Pulumi Deploy
-        working-directory: ./infrastructure
-        run: |
-          pip install -r requirements.txt
-          pulumi login ${{ secrets.PULUMI_BACKEND_URL }}
-          pulumi stack select staging --create
-          pulumi preview --non-interactive
-          pulumi up --yes --non-interactive
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
-          PULUMI_BACKEND_URL: s3://0202-pulumi-state/neurion-ai/appsync-consumer
+  
+  build-production:
+    if: github.ref == 'refs/heads/main'
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy AppSync Consumer
+        uses: ./.github/actions/build-lambda
+        with:
+          environment-name: production
+          service-name: appsync-consumer
+          service-path: functions/appsync_consumer
+          upload-artifact-name: appsync-consumer-zip-production
+          upload-artifact-path: appsync_consumer.zip
+          pulumi-working-directory: infrastructure/appsync_consumer
+          pulumi-stack: production
+          pulumi-config-passphrase: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+          pulumi-backend_url: s3://0202-pulumi-state/neurion-ai/appsync-consumer
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-  # build-production:
-  #   if: github.ref == 'refs/heads/main'
-  #   needs: [lint, test]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: '3.13'
-  #     - name: Install dependencies
-  #       run: pip install -r functions/appsync-consumer/requirements.txt
-  #     - name: Zip Lambda
-  #       run: |
-  #         cd functions/appsync-consumer
-  #         zip -r ../../appsync-consumer.zip .
-  #     - name: Upload artifact
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: appsync-consumer-production
-  #         path: appsync-consumer.zip
 
-  # deploy-production:
-  #   if: github.ref == 'refs/heads/main'
-  #   needs: build-production
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Download artifact
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: appsync-consumer-production
-  #     - name: Install Pulumi dependencies
-  #       run: pip install -r infrastructure/requirement.txt
-  #     - name: Pulumi Deploy (Production)
-  #       env:
-  #         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-  #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         PULUMI_BACKEND_URL: s3://your-production-bucket/production-folder/
-  #       run: |
-  #         pulumi stack select production
-  #         pulumi up --yes --cwd infrastructure
+  deploy-production:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    needs: build-production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy AppSync Consumer
+        uses: ./.github/actions/deploy-lambda
+        with:
+          environment-name: production
+          service-name: appsync-consumer
+          service-path: functions/appsync_consumer
+          download-artifact-name: appsync-consumer-zip-production
+          pulumi-working-directory: infrastructure/appsync_consumer
+          pulumi-stack: production
+          pulumi-config-passphrase: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+          pulumi-backend_url: s3://0202-pulumi-state/neurion-ai/appsync-consumer
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}

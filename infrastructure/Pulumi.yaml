@@ -1,6 +1,0 @@
-name: neurion-ai
-runtime:
-  name: python
-  options:
-    virtualenv: venv
-description: A Python program to deploy an AWS Lambda function using GitHub Actions.

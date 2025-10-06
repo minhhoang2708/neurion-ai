@@ -1,0 +1,22 @@
+name: Unit Test
+description: Run Unit Test
+inputs:
+  service-path:
+    required: true
+    type: string
+ 
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+    - name: Install dependencies
+      shell: bash
+      run: pip install -r ${{ inputs.service-path }}/requirements.txt
+    - name: Test
+      shell: bash
+      run: |
+        # flake8 functions/zendesk_cleaner/main.py
+        echo "Unit Test step is currently disabled."

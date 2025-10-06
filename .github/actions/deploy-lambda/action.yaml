@@ -1,0 +1,69 @@
+name: Deploy Lambda
+description: Deploy and package a Lambda function with shared code
+inputs:
+  service-name:
+    required: true
+    type: string
+  service-path:
+    required: true
+    type: string
+  environment-name:
+    required: true
+    type: string
+  download-artifact-name:
+    required: true
+    type: string
+  pulumi-working-directory:
+    required: true
+    type: string
+  pulumi-stack:
+    required: true
+    type: string
+  pulumi-config-passphrase:
+    required: true
+    type: string
+  pulumi-backend_url:
+    required: true
+    type: string
+  aws-access-key-id:
+    required: true
+    type: string
+  aws-secret-access-key:
+    required: true
+    type: string
+  aws-region:
+    required: true
+    type: string
+  aws-session-token:
+    required: false
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/download-artifact@v4
+      with: 
+        name: ${{ inputs.download-artifact-name }} 
+    - uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-session-token: ${{ inputs.aws-session-token }}
+        aws-region: ${{ inputs.aws-region }}
+    - name: Setup Pulumi
+      uses: pulumi/actions@v5
+    - name: Run Pulumi Preview
+      working-directory: ${{ inputs.pulumi-working-directory }}
+      shell: bash
+      run: |
+        pip install -r requirements.txt
+        pulumi login ${{ inputs.pulumi-backend_url }}
+        pulumi stack select ${{ inputs.pulumi-stack }} --create
+        pulumi preview --non-interactive
+        pulumi up --yes --non-interactive
+      env:
+        AWS_REGION: ${{ inputs.aws-region }}
+        PULUMI_CONFIG_PASSPHRASE: ${{ inputs.pulumi-config-passphrase }}
+        PULUMI_BACKEND_URL: ${{ inputs.pulumi-backend_url }}
+
+      
