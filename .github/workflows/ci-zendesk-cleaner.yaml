@@ -5,7 +5,7 @@ on:
     # paths:
     #   - 'functions/zendesk-cleaner/**'
   pull_request:
-  worfkflow_dispatch:
+  workflow_dispatch:
     # paths:
     #   - 'functions/zendesk-cleaner/**'
 
