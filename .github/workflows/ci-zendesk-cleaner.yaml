@@ -88,6 +88,7 @@ jobs:
       - name: Run Pulumi Deploy
         working-directory: ./infrastructure
         run: |
+          pip install -r requirements.txt
           pulumi login ${{ secrets.PULUMI_BACKEND_URL }}
           pulumi stack select staging --create
           pulumi preview --non-interactive
