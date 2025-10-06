@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Create Lambda ZIP
         run: |
-          pip install -r functions/appsync-consumer/requirements.txt
+          pip install -r ./functions/appsync-consumer/requirements.txt
           zip -r appsync_consumer.zip ./functions/appsync-consumer
       - uses: actions/upload-artifact@v4
         with: { name: appsync-consumer-zip-staging, path: appsync_consumer.zip }

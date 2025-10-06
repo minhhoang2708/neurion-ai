@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Create Lambda ZIP
         run: |
-          pip install -r functions/request-consumer/requirements.txt
+          pip install -r ./functions/request-consumer/requirements.txt
           zip -r request_consumer.zip ./functions/request-consumer
       - uses: actions/upload-artifact@v4
         with: { name: request-consumer-zip-staging, path: request_consumer.zip }

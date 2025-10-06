@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Create Lambda ZIP
         run: |
-          pip install -r functions/zendesk-consumer/requirements.txt
+          pip install -r ./functions/zendesk-consumer/requirements.txt
           zip -r zendesk-consumer.zip ./functions/request-consumer
       - uses: actions/upload-artifact@v4
         with: { name: zendesk-consumer-zip-staging, path: zendesk-consumer.zip }
