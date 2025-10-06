@@ -1,0 +1,2 @@
+config:
+  appsync-consumer-memory: 256
