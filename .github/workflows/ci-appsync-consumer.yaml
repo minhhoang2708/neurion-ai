@@ -3,11 +3,11 @@ name: CI AppSync Consumer
 on:
   push:
     paths:
-      - 'functions/appsync_consumer/**'
+      - 'infrastructure/appsync_consumer/**'
   pull_request:
   workflow_dispatch:
     paths:
-      - 'functions/appsync_consumer/**'
+      - 'infrastructure/appsync_consumer/**'
 
 jobs:
   lint:
