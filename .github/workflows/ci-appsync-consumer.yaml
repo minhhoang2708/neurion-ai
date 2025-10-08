@@ -7,11 +7,11 @@ on:
       - 'functions/shared_lib/**'
       - 'infrastructure/appsync_consumer/**'
   pull_request:
-  workflow_dispatch:
     paths:
       - 'functions/appsync_consumer/**'
       - 'functions/shared_lib/**'
       - 'infrastructure/appsync_consumer/**'
+  workflow_dispatch:
 
 
 jobs:
