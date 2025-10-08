@@ -13,7 +13,7 @@ def handler(event, context):
             "Content-Type": "application/json"
         },
         "body": json.dumps({
-            "message": "AppSync consumer Lambda function executed successfully!",
+            "message": "123AppSync consumer Lambda function executed successfully!",
             "input": event
         })
     }
