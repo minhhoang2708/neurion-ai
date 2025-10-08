@@ -42,7 +42,7 @@ lambda_function = aws.lambda_.Function(
     code=pulumi.FileArchive("../../appsync_consumer.zip"),
     description="A simple Python Lambda function deployed with Pulumi.",
     tags={
-        "project": f"neurion-ai-{project_name}-lambda",
+        "project": f"neurion-2ai-{project_name}-lambda",
         "stack": stack_name,
     },
 )
